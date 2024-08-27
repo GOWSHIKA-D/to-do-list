@@ -1,0 +1,79 @@
+document.addEventListener('DOMContentLoaded', loadTasks);
+
+const taskInput = document.getElementById('task-input');
+const addTaskBtn = document.getElementById('add-task-btn');
+const taskList = document.getElementById('task-list');
+
+addTaskBtn.addEventListener('click', addTask);
+taskList.addEventListener('click', handleTaskAction);
+
+function addTask() {
+    const taskText = taskInput.value.trim();
+
+    if (taskText) {
+        const taskItem = document.createElement('li');
+        taskItem.textContent = taskText;
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        taskItem.appendChild(deleteBtn);
+
+        taskList.appendChild(taskItem);
+        saveTask(taskText);
+
+        taskInput.value = '';
+    }
+}
+
+function handleTaskAction(e) {
+    if (e.target.tagName === 'BUTTON') {
+        const taskItem = e.target.parentElement;
+        const taskText = taskItem.firstChild.textContent;
+
+        taskItem.remove();
+        deleteTask(taskText);
+    } else {
+        e.target.classList.toggle('completed');
+        toggleTaskStatus(e.target.firstChild.textContent);
+    }
+}
+
+function saveTask(task) {
+    let tasks = getTasksFromLocalStorage();
+    tasks.push({ text: task, completed: false });
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+function deleteTask(task) {
+    let tasks = getTasksFromLocalStorage();
+    tasks = tasks.filter(t => t.text !== task);
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+function toggleTaskStatus(task) {
+    let tasks = getTasksFromLocalStorage();
+    tasks = tasks.map(t => t.text === task ? { ...t, completed: !t.completed } : t);
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+function loadTasks() {
+    let tasks = getTasksFromLocalStorage();
+
+    tasks.forEach(task => {
+        const taskItem = document.createElement('li');
+        taskItem.textContent = task.text;
+        if (task.completed) {
+            taskItem.classList.add('completed');
+        }
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        taskItem.appendChild(deleteBtn);
+
+        taskList.appendChild(taskItem);
+    });
+}
+
+function getTasksFromLocalStorage() {
+    return localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks')) : [];
+}
